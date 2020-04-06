@@ -5,10 +5,11 @@ import java.io.Serializable;
 public class file implements Serializable
 {
     public String name;
+    public String method;
     public String filePath;
     public int[] allocatedBlocks;
 
-    public static void createFile(String path, int size)
+    public static void createFile(String path, int size, String method)
     {
         String[] pathSplit = path.split("/");
         if(pathSplit.length < 2)
@@ -34,7 +35,16 @@ public class file implements Serializable
         }
 
         file f = new file();
-        f.allocatedBlocks = virtualFileSystem.contiguousAallocate(size);
+        if(method.equals("contiguous"))
+        {
+            f.allocatedBlocks = virtualFileSystem.contiguousAallocate(size);
+            f.method = "contiguous";
+        }
+        else if(method.equals("indexed"))
+        {
+            f.allocatedBlocks = virtualFileSystem.indexedAallocate(size);
+            f.method = "indexed";
+        }
         if(f.allocatedBlocks == null)
         {
             System.err.println("no enough contiguous space");
@@ -44,6 +54,10 @@ public class file implements Serializable
         f.name = pathSplit[pathSplit.length-1];
         f.filePath = path;
         directory.files.add(f);
+        if(method.equals("contiguous"))
+            virtualFileSystem.allocatedBlocksForFiles.add(f);
+        if(method.equals("indexed"))
+            virtualFileSystem.indexBlock.add(f);
         System.out.println("File created successfully");
     }
     public static void deleteFile(String path)
@@ -69,6 +83,10 @@ public class file implements Serializable
                 for(int i = f.allocatedBlocks[0] ; i < f.allocatedBlocks[0] + f.allocatedBlocks.length ; i++)
                     virtualFileSystem.freeSpaceManager[i] = 0;
                 directory.files.remove(f);
+                if(f.method.equals("contiguous"))
+                    virtualFileSystem.allocatedBlocksForFiles.remove(f);
+                else if(f.method.equals("indexed"))
+                    virtualFileSystem.indexBlock.remove(f);
                 System.out.println("File deleted successfully");
                 return;
             }

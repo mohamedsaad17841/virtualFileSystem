@@ -5,16 +5,20 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Available commands : ");
-        System.out.println("createFile fullpath/fileName fileSize");
+
+        virtualFileSystem.loadVFS();
+        virtualFileSystem.freeSpaceManager[16] = 0;
+
+        System.out.println("\nAvailable commands : ");
+        System.out.println("createFile fullpath/fileName fileSize method        (method : contiguous or indexed)");
         System.out.println("createFolder fullpath/folderName");
         System.out.println("deleteFile fullpath/fileName");
         System.out.println("deleteFolder fullpath/folderName");
         System.out.println("displayDiskStatus");
         System.out.println("displayDiskStructure");
         System.out.println("displayAllocatedBlocks");
-        System.out.println("Quit");
-        virtualFileSystem.loadVFS();
+        System.out.println("Quit\n");
+
         Scanner in = new Scanner(System.in);
         while (in.hasNextLine()) {
             String command = in.nextLine();
@@ -22,11 +26,11 @@ public class Main {
             if (command.equals("exit")) return;
             String[] commandSplit = command.split(" ");
             if (commandSplit[0].equals("createfile")) {
-                if (commandSplit.length != 3) {
+                if (commandSplit.length != 4) {
                     System.err.println("Wrong number of arguments");
                     continue;
                 }
-                file.createFile(commandSplit[1], Integer.parseInt(commandSplit[2]));
+                file.createFile(commandSplit[1], Integer.parseInt(commandSplit[2]), commandSplit[3]);
             } else if (commandSplit[0].equals("createfolder")) {
                 if (commandSplit.length != 2) {
                     System.err.println("Wrong number of arguments");
@@ -64,8 +68,19 @@ public class Main {
                     System.err.println("Wrong number of arguments");
                     continue;
                 }
-                System.out.println("Allocated Blocks for each file : ");
-                for(String str : virtualFileSystem.allocatedBlocksForFiles) System.out.println(str);
+                System.out.println("Allocated Blocks for contiguous files : ");
+                for(file f : virtualFileSystem.allocatedBlocksForFiles)
+                {
+                    System.out.println(f.name + " " + f.allocatedBlocks[0] + " " + f.allocatedBlocks.length);
+                }
+                System.out.println("Allocated Blocks for Indexed files");
+                for(int j = 0 ; j < virtualFileSystem.indexBlock.size() ; j++)
+                {
+                    file f = virtualFileSystem.indexBlock.get(j);
+                    System.out.println(f.name + " " + j);
+                    for(int i : f.allocatedBlocks) System.out.print(i + " ");
+                    System.out.println("");
+                }
             } else if (commandSplit[0].equals("quit")) {
                 if (commandSplit.length != 1) {
                     System.err.println("Wrong number of arguments");

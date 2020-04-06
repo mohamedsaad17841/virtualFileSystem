@@ -11,9 +11,43 @@ public class virtualFileSystem {
     private static final int diskSize = 10000;
     static Directory root = new Directory("root", "root");
     static int freeSpaceManager[] = new int[diskSize];        //initially all places are empty
-    static ArrayList<String> allocatedBlocksForFiles = new ArrayList<>();
+    static ArrayList<file> allocatedBlocksForFiles = new ArrayList<>();
+    static ArrayList<file> indexBlock = new ArrayList<>();
+  //  static ArrayList<String> indexedBlocksForFiles = new ArrayList<>();
 
 
+    public static int[] indexedAallocate(int size)
+    {
+        if(size > diskSize)
+        {
+            System.err.println("no free space");
+            return null;
+        }
+
+        int[] allocated = new int[size]; int x = 0;
+        int indexedSpace = 0;
+        int i = 0;
+
+        while(i < diskSize && indexedSpace < size)
+        {
+            if(freeSpaceManager[i] == 1) {i++; continue;}
+            allocated[x++] = i;
+            indexedSpace++;
+            i++;
+        }
+
+        if(indexedSpace < size)
+        {
+            System.err.println("no free space");
+            return null;
+        }
+
+        for(int j = 0 ; j < size ; j++)
+        {
+            freeSpaceManager[allocated[j]] = 1;
+        }
+        return allocated;
+    }
     public static int[] contiguousAallocate(int size)
     {
         if(size > diskSize)
@@ -56,9 +90,7 @@ public class virtualFileSystem {
             allocated[x++] = j;
         }
         return allocated;
-
     }
-
     public static void displayDiskStatus()
     {
         int emptySpace = 0;
@@ -78,11 +110,11 @@ public class virtualFileSystem {
                 allocatedBlocks.add(i);
             }
         }
-        System.out.println("Empty Space = " + emptySpace);
-        for(int i : emptyBlocks) System.out.print(i + ",");
-        System.out.println("");
         System.out.println("Allocated Space = " + allocatedSpace);
         for(int i : allocatedBlocks) System.out.print(i + ",");
+        System.out.println("");
+        System.out.println("Empty Space = " + emptySpace);
+        for(int i : emptyBlocks) System.out.print(i + ",");
         System.out.println("");
     }
 
@@ -100,19 +132,22 @@ public class virtualFileSystem {
                 displayDiskStructure(d, directoryOutputSpace + "   ", fileOutputSpace + "   ");
         }
     }
-    public static void traverse(Directory directory)
+   /* public static void traverse(Directory directory)
     {
         if(directory.files.size() > 0)
         {
             for(file f : directory.files)
-                allocatedBlocksForFiles.add(f.name + " " + f.allocatedBlocks[0] + " " + f.allocatedBlocks.length);
+                if(f.method.equals("contiguous"))
+                    allocatedBlocksForFiles.add(f.name + " " + f.allocatedBlocks[0] + " " + f.allocatedBlocks.length);
+              *//*  else if(f.method.equals("indexed"))
+                    indexedBlocksForFiles.add()*//*
         }
         if(directory.subDirectories.size() > 0)
         {
             for(Directory d : directory.subDirectories)
                 traverse(d);
         }
-    }
+    }*/
 
     public static void saveVFS()
     {
@@ -123,9 +158,8 @@ public class virtualFileSystem {
         {
             output.writeObject(root);                       //to save Files and Folders Directory Structure.
             output.writeObject(freeSpaceManager);           //to save free space manager
-            allocatedBlocksForFiles.clear();                //embty the array before fill it again
-            traverse(root);                                 //to generate allocated blocks for files
             output.writeObject(allocatedBlocksForFiles);    //to save The allocated blocks for files
+            output.writeObject(indexBlock);    //to save The allocated blocks for files
             System.out.println("Virtual File System saved successfully");
         }
         catch (IOException e) {
@@ -142,7 +176,8 @@ public class virtualFileSystem {
             //deserialize
             root = (Directory)input.readObject();
             freeSpaceManager = (int[]) input.readObject();
-            allocatedBlocksForFiles = (ArrayList<String>) input.readObject();
+            allocatedBlocksForFiles = (ArrayList<file>) input.readObject();
+            indexBlock = (ArrayList<file>) input.readObject();
             System.out.println("Virtual File System loaded successfully");
         }
         catch(ClassNotFoundException ex){
@@ -154,7 +189,7 @@ public class virtualFileSystem {
         catch(Exception ex){
             root = new Directory("root", "root");
             System.out.println("Virtual File System loaded successfully2");
-           // ex.printStackTrace();
+         //   ex.printStackTrace();
         }
     }
 
