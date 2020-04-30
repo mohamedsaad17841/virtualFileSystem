@@ -1,7 +1,9 @@
 package com.company;
 
 
-class pair<T, C>
+import java.io.Serializable;
+
+class pair<T, C> implements Serializable
 {
     T first;
     C second;

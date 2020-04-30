@@ -12,9 +12,9 @@ public class file implements Serializable
     public static void createFile(String path, int size, String method)
     {
         String[] pathSplit = path.split("/");
-        if(pathSplit.length < 2)
+        if(pathSplit.length < 2 || !pathSplit[0].equals("root"))
         {
-            System.err.println("Cannot create file");
+            System.err.println("Path Error");
             return;
         }
         int depth = pathSplit.length - 2;
@@ -24,7 +24,13 @@ public class file implements Serializable
             System.err.println("No such file or directory");
             return;
         }
-
+        //authorization
+        boolean authorized = virtualFileSystem.directoryAuthorize(directory, "create");
+        if(!authorized)
+        {
+            System.err.println("Unauthorized user");
+            return;
+        }
         for(file f : directory.files)
         {
             if(f.name.equals(pathSplit[pathSplit.length-1]))
@@ -63,9 +69,9 @@ public class file implements Serializable
     public static void deleteFile(String path)
     {
         String[] pathSplit = path.split("/");
-        if(pathSplit.length < 2)
+        if(pathSplit.length < 2 || !pathSplit[0].equals("root"))
         {
-            System.err.println("Cannot delete file");
+            System.err.println("Path Error");
             return;
         }
         int depth = pathSplit.length - 2;
@@ -75,7 +81,13 @@ public class file implements Serializable
             System.err.println("No such file or directory");
             return;
         }
-
+        //authorization
+        boolean authorized = virtualFileSystem.directoryAuthorize(directory, "delete");
+        if(!authorized)
+        {
+            System.err.println("Unauthorized user");
+            return;
+        }
         for(file f : directory.files)
         {
             if(f.name.equals(pathSplit[pathSplit.length-1]))

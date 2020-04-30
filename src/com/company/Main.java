@@ -6,10 +6,14 @@ public class Main {
 
     public static void main(String[] args) {
 
-        virtualFileSystem.loadVFS();
-        virtualFileSystem.freeSpaceManager[16] = 0;
+        virtualFileSystem.loadSystem();
 
         System.out.println("\nAvailable commands : ");
+        System.out.println("tellUser");
+        System.out.println("login username password");
+        System.out.println("grant username path capabilities");
+        System.out.println("createUser username password");
+        System.out.println("deleteUser userName");
         System.out.println("createFile fullpath/fileName fileSize method        (method : contiguous or indexed)");
         System.out.println("createFolder fullpath/folderName");
         System.out.println("deleteFile fullpath/fileName");
@@ -17,6 +21,8 @@ public class Main {
         System.out.println("displayDiskStatus");
         System.out.println("displayDiskStructure");
         System.out.println("displayAllocatedBlocks");
+        System.out.println("displayAllUsers");
+        System.out.println("displayAllCapabilities");
         System.out.println("Quit\n");
 
         Scanner in = new Scanner(System.in);
@@ -25,7 +31,71 @@ public class Main {
             command = command.toLowerCase();
             if (command.equals("exit")) return;
             String[] commandSplit = command.split(" ");
-            if (commandSplit[0].equals("createfile")) {
+
+            if(commandSplit[0].equals(("telluser")))
+            {
+                if(commandSplit.length != 1)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                virtualFileSystem.tellUser();
+            }
+            else if(commandSplit[0].equals(("login")))
+            {
+                if(commandSplit.length != 3)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                virtualFileSystem.login(commandSplit[1], commandSplit[2]);
+            }
+            else if(commandSplit[0].equals(("grant")))
+            {
+                if(commandSplit.length != 4)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                virtualFileSystem.grant(commandSplit[1], commandSplit[2], commandSplit[3]);
+            }
+            else if(commandSplit[0].equals(("createuser")))
+            {
+                if(commandSplit.length != 3)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                User.createUser(commandSplit[1], commandSplit[2]);
+            }
+            else if(commandSplit[0].equals(("deleteuser")))
+            {
+                if(commandSplit.length != 2)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                User.deleteUser(commandSplit[1]);
+            }
+            else if(commandSplit[0].equals(("displayallusers")))
+            {
+                if(commandSplit.length != 1)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                virtualFileSystem.displayAllUsers();
+            }
+            else if(commandSplit[0].equals(("displayallcapabilities")))
+            {
+                if(commandSplit.length != 1)
+                {
+                    System.err.println("Wrong number of arguments");
+                    continue;
+                }
+                virtualFileSystem.displayAllCapabilities();
+            }
+            else if (commandSplit[0].equals("createfile")) {
                 if (commandSplit.length != 4) {
                     System.err.println("Wrong number of arguments");
                     continue;
@@ -86,7 +156,7 @@ public class Main {
                     System.err.println("Wrong number of arguments");
                     continue;
                 }
-                virtualFileSystem.saveVFS();
+                virtualFileSystem.saveSystem();
                 return;
             } else {
                 System.err.println("Invalid command!");
